@@ -1,0 +1,291 @@
+<!--
+Nome: Wesley Rodrigo Barbosa Mafra
+Matrícula: <INSIRA_SUA_MATRICULA_AQUI>
+Turma: <INSIRA_SUA_TURMA_AQUI>
+
+Projeto: Catálogo de Empréstimo de Equipamentos - Atividade Avaliativa
+Instruções: Salve este arquivo como `index.html` e abra no navegador. Tudo roda no cliente
+(utiliza Vue 3 via CDN e localStorage). Substitua os campos de identificação acima.
+-->
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Catálogo de Empréstimo de Equipamentos</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* styles.css embutido para conveniência */
+    :root{--verde:#2e7d32;--vermelho:#c62828;--cinza:#f4f6f8;--accent:#1565c0}
+    body{font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif;margin:16px;background:#fff}
+    h1{margin:0 0 12px}
+    .container{max-width:980px;margin:0 auto}
+    form{background:#fafafa;padding:12px;border-radius:8px;border:1px solid #e6e9ee;margin-bottom:16px}
+    label{display:block;font-size:0.9rem;margin-bottom:6px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    input[type=text],select{width:100%;padding:8px;border:1px solid #ccd; border-radius:4px}
+    .actions{display:flex;gap:8px;align-items:center;margin-top:8px}
+    button{padding:8px 12px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    button[disabled]{opacity:0.5;cursor:not-allowed}
+    .btn-danger{background:var(--vermelho)}
+    .btn-secondary{background:#6c6c6c}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .status{padding:4px 8px;border-radius:12px;color:#fff;font-weight:600;display:inline-block}
+    .status.disponivel{background:var(--verde)}
+    .status.emprestado{background:var(--vermelho)}
+    .empty{padding:24px;background:#fff8e1;border:1px solid #ffecb3;border-radius:6px}
+    .filters{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .counters{display:flex;gap:12px;margin-bottom:8px}
+    .chip{background:#f1f5f9;padding:6px 10px;border-radius:999px;border:1px solid #e0e7ff}
+    @media (max-width:700px){.grid{grid-template-columns:1fr}.filters{flex-direction:column;align-items:stretch}}
+  </style>
+</head>
+<body>
+  <div id="app" class="container" role="main">
+    <h1>Catálogo de Empréstimo de Equipamentos</h1>
+
+    <section aria-labelledby="form-title">
+      <h2 id="form-title" style="font-size:1rem;margin:0 0 8px">Cadastro / Edição</h2>
+
+      <form @submit.prevent="onSubmit" novalidate>
+        <div class="grid">
+          <div>
+            <label for="nome">Nome *</label>
+            <input id="nome" type="text" v-model="form.nome" aria-required="true" aria-label="Nome do equipamento" />
+          </div>
+
+          <div>
+            <label for="categoria">Categoria *</label>
+            <select id="categoria" v-model="form.categoria" aria-required="true">
+              <option value="">-- selecione --</option>
+              <option>Informática</option>
+              <option>Medição</option>
+              <option>Áudio/Visual</option>
+              <option>Ferramentas</option>
+              <option>Outros</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="patrimonio">Patrimônio *</label>
+            <input id="patrimonio" type="text" v-model="form.patrimonio" aria-required="true" />
+          </div>
+
+          <div>
+            <label for="status">Status *</label>
+            <select id="status" v-model="form.status" aria-required="true">
+              <option value="">-- selecione --</option>
+              <option value="disponível">disponível</option>
+              <option value="emprestado">emprestado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" :disabled="!isFormValid">{{ editingId === null ? 'Adicionar' : 'Salvar' }}</button>
+          <button type="button" class="btn-secondary" @click="resetForm">Limpar</button>
+          <span style="margin-left:auto;font-size:0.9rem;color:#444">ID atual: <strong>{{ editingId ?? 'novo' }}</strong></span>
+        </div>
+      </form>
+    </section>
+
+    <section aria-labelledby="filtros">
+      <h2 id="filtros" style="font-size:1rem;margin:0 0 8px">Filtros e Contadores</h2>
+
+      <div class="filters">
+        <input type="text" placeholder="Filtrar por nome" v-model="filtroNome" aria-label="Filtro por nome" />
+        <select v-model="filtroCategoria" aria-label="Filtro por categoria">
+          <option value="">Todas categorias</option>
+          <option>Informática</option>
+          <option>Medição</option>
+          <option>Áudio/Visual</option>
+          <option>Ferramentas</option>
+          <option>Outros</option>
+        </select>
+
+        <select v-model="filtroStatus" aria-label="Filtro por status">
+          <option value="">Todos status</option>
+          <option value="disponível">disponível</option>
+          <option value="emprestado">emprestado</option>
+        </select>
+
+        <button @click="clearFilters" class="btn-secondary">Limpar filtros</button>
+      </div>
+
+      <div class="counters" aria-live="polite">
+        <div class="chip">Total: {{ totalEquipamentos }}</div>
+        <div class="chip">Disponíveis: {{ totalDisponiveis }}</div>
+        <div class="chip">Emprestados: {{ totalEmprestados }}</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="lista">
+      <h2 id="lista" style="font-size:1rem;margin:0 0 8px">Lista de Equipamentos</h2>
+
+      <div v-if="equipamentosFiltrados.length === 0" class="empty">
+        Nenhum equipamento encontrado. Use o formulário acima para adicionar itens.
+      </div>
+
+      <div v-else>
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Patrimônio</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in equipamentosFiltrados" :key="item.id">
+              <td>{{ item.nome }}</td>
+              <td>{{ item.categoria }}</td>
+              <td>{{ item.patrimonio }}</td>
+              <td>
+                <span :class="['status', item.status === 'disponível' ? 'disponivel' : 'emprestado']" :title="item.status">
+                  {{ item.status }}
+                </span>
+              </td>
+              <td>
+                <button @click="startEdit(item)" title="Editar item">Editar</button>
+                <button @click="confirmRemove(item)" class="btn-danger" title="Remover item">Remover</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer style="margin-top:16px;font-size:0.85rem;color:#666">Arquivo salvo em localStorage. Recarregue a página para testar persistência.</footer>
+  </div>
+
+  <!-- Vue 3 CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const STORAGE_KEY = 'catalogo_equipamentos_v1';
+
+    const app = Vue.createApp({
+      data() {
+        return {
+          equipamentos: [],
+          form: {
+            nome: '',
+            categoria: '',
+            patrimonio: '',
+            status: ''
+          },
+          editingId: null,
+          filtroNome: '',
+          filtroCategoria: '',
+          filtroStatus: ''
+        };
+      },
+      computed: {
+        isFormValid() {
+          return this.form.nome.trim() !== '' && this.form.categoria.trim() !== '' && this.form.patrimonio.trim() !== '' && (this.form.status === 'disponível' || this.form.status === 'emprestado');
+        },
+        totalEquipamentos() {
+          return this.equipamentos.length;
+        },
+        totalDisponiveis() {
+          return this.equipamentos.filter(e => e.status === 'disponível').length;
+        },
+        totalEmprestados() {
+          return this.equipamentos.filter(e => e.status === 'emprestado').length;
+        },
+        equipamentosFiltrados() {
+          const nome = this.filtroNome.trim().toLowerCase();
+          return this.equipamentos.filter(item => {
+            if (nome && !item.nome.toLowerCase().includes(nome)) return false;
+            if (this.filtroCategoria && item.categoria !== this.filtroCategoria) return false;
+            if (this.filtroStatus && item.status !== this.filtroStatus) return false;
+            return true;
+          });
+        }
+      },
+      methods: {
+        load() {
+          try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            this.equipamentos = raw ? JSON.parse(raw) : [];
+          } catch (e) {
+            console.error('Erro ao carregar localStorage', e);
+            this.equipamentos = [];
+          }
+        },
+        save() {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(this.equipamentos));
+        },
+        generateId() {
+          // id estável gerado a partir do timestamp + random para evitar colisão
+          return Date.now() + Math.floor(Math.random() * 999);
+        },
+        onSubmit() {
+          if (!this.isFormValid) return;
+          if (this.editingId === null) {
+            // Create
+            const novo = { id: this.generateId(), nome: this.form.nome.trim(), categoria: this.form.categoria, patrimonio: this.form.patrimonio.trim(), status: this.form.status };
+            this.equipamentos.push(novo);
+            this.save();
+            this.resetForm();
+            // foco no nome
+            this.$nextTick(() => document.getElementById('nome').focus());
+          } else {
+            // Update
+            const idx = this.equipamentos.findIndex(e => e.id === this.editingId);
+            if (idx > -1) {
+              this.equipamentos[idx] = { ...this.equipamentos[idx], nome: this.form.nome.trim(), categoria: this.form.categoria, patrimonio: this.form.patrimonio.trim(), status: this.form.status };
+              this.save();
+            }
+            this.editingId = null;
+            this.resetForm();
+            this.$nextTick(() => document.getElementById('nome').focus());
+          }
+        },
+        startEdit(item) {
+          this.editingId = item.id;
+          this.form.nome = item.nome;
+          this.form.categoria = item.categoria;
+          this.form.patrimonio = item.patrimonio;
+          this.form.status = item.status;
+          this.$nextTick(() => document.getElementById('nome').focus());
+        },
+        confirmRemove(item) {
+          if (window.confirm(`Confirma remoção do equipamento "${item.nome}" (patrimônio: ${item.patrimonio})?`)) {
+            this.remove(item.id);
+          }
+        },
+        remove(id) {
+          this.equipamentos = this.equipamentos.filter(e => e.id !== id);
+          this.save();
+          // se estava editando o mesmo item, resetar
+          if (this.editingId === id) {
+            this.editingId = null;
+            this.resetForm();
+          }
+        },
+        resetForm() {
+          this.form.nome = '';
+          this.form.categoria = '';
+          this.form.patrimonio = '';
+          this.form.status = '';
+          this.editingId = null;
+        },
+        clearFilters() {
+          this.filtroNome = '';
+          this.filtroCategoria = '';
+          this.filtroStatus = '';
+        }
+      },
+      mounted() {
+        this.load();
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>
