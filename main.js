@@ -9,7 +9,7 @@ createApp({
         nome: "",
         categoria: "",
         patrimonio: "",
-        status: "disponível",
+        status: "Disponível",
       },
       editando: false,
       filtroCategoria: "",
@@ -20,10 +20,10 @@ createApp({
       return this.equipamentos.length;
     },
     totalDisponiveis() {
-      return this.equipamentos.filter(e => e.status === "disponível").length;
+      return this.equipamentos.filter(e => e.status === "Disponível").length;
     },
     totalEmprestados() {
-      return this.equipamentos.filter(e => e.status === "emprestado").length;
+      return this.equipamentos.filter(e => e.status === "Emprestado").length;
     },
     equipamentosFiltrados() {
       if (!this.filtroCategoria) return this.equipamentos;
@@ -62,7 +62,7 @@ createApp({
       }
     },
     resetarForm() {
-      this.form = { id: null, nome: "", categoria: "", patrimonio: "", status: "disponível" };
+      this.form = { id: null, nome: "", categoria: "", patrimonio: "", status: "Disponível" };
     },
     salvarLocalStorage() {
       localStorage.setItem("equipamentos", JSON.stringify(this.equipamentos));
