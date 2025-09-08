@@ -39,6 +39,18 @@ createApp({
         return;
       }
 
+      // 🔎 Validação de duplicidade (mesmo patrimônio na mesma categoria)
+      const existe = this.equipamentos.some(e =>
+        e.patrimonio.toLowerCase() === this.form.patrimonio.toLowerCase() &&
+        e.categoria.toLowerCase() === this.form.categoria.toLowerCase() &&
+        e.id !== this.form.id // evita bloquear edição do mesmo item
+      );
+
+      if (existe) {
+        alert("Já existe um equipamento com esse patrimônio na mesma categoria!");
+        return;
+      }
+
       if (this.editando) {
         const index = this.equipamentos.findIndex(e => e.id === this.form.id);
         this.equipamentos[index] = { ...this.form };
