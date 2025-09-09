@@ -43,18 +43,22 @@ button:hover {
 
 /* Botão de Adicionar */
 .btn-adicionar {
-  background-color: #28a745; /* verde */
+  background: linear-gradient(90deg, #28a745, #218838); /* verde */
+  width: 50%; 
+  margin: auto; 
+  display: block;
+  
 }
 
 /* Botão de Editar */
 .btn-editar {
-  background-color: #ffc107; /* amarelo */
-  color: #000; /* preto pra melhor contraste */
+  background-color: #17a2b8; 
+  color: #000; 
 }
 
 /* Botão de Remover */
 .btn-remover {
-  background-color: #dc3545; /* vermelho */
+  background-color: #e74c3c; /* vermelho */
 }
 
 
@@ -71,12 +75,12 @@ th, td {
 }
 
 .Disponivel {
-  color: green;
+  color: #28a745;
   font-weight: bold;
 }
 
 .Emprestado {
-  color: red;
+  color: #dc3545;
   font-weight: bold;
 }
 
@@ -84,4 +88,22 @@ th, td {
   margin: 15px 0;
   display: flex;
   gap: 15px;
+}
+
+/* Inputs */
+form input, form select {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+}
+
+/* Tabela */
+table {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th {
+  background-color: #f4f4f4;
 }
