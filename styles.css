@@ -33,11 +33,30 @@ button {
   padding: 8px 12px;
   border: none;
   border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
 }
 
 button:hover {
   opacity: 0.9;
 }
+
+/* Botão de Adicionar */
+.btn-adicionar {
+  background-color: #28a745; /* verde */
+}
+
+/* Botão de Editar */
+.btn-editar {
+  background-color: #ffc107; /* amarelo */
+  color: #000; /* preto pra melhor contraste */
+}
+
+/* Botão de Remover */
+.btn-remover {
+  background-color: #dc3545; /* vermelho */
+}
+
 
 table {
   width: 100%;
@@ -51,12 +70,12 @@ th, td {
   text-align: center;
 }
 
-.disponivel {
+.Disponivel {
   color: green;
   font-weight: bold;
 }
 
-.emprestado {
+.Emprestado {
   color: red;
   font-weight: bold;
 }

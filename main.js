@@ -39,11 +39,11 @@ createApp({
         return;
       }
 
-      // 🔎 Validação de duplicidade (mesmo patrimônio na mesma categoria)
+      //  Validação de duplicidade: mesmo patrimônio na mesma categoria
       const existe = this.equipamentos.some(e =>
         e.patrimonio.toLowerCase() === this.form.patrimonio.toLowerCase() &&
         e.categoria.toLowerCase() === this.form.categoria.toLowerCase() &&
-        e.id !== this.form.id // evita bloquear edição do mesmo item
+        e.id !== this.form.id 
       );
 
       if (existe) {

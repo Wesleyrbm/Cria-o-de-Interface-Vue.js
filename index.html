@@ -30,11 +30,11 @@
 
       <label for="status">Status:</label>
       <select id="status" v-model="form.status" required>
-        <option value="disponível">Disponível</option>
-        <option value="emprestado">Emprestado</option>
+        <option value="Disponível">Disponível</option>
+        <option value="Emprestado">Emprestado</option>
       </select>
 
-      <button type="submit">{{ editando ? "Salvar Alterações" : "Adicionar" }}</button>
+      <button type="submit" class="btn-adicionar">{{ editando ? "Salvar Alterações" : "Adicionar" }}</button>
     </form>
 
     <!-- Contadores -->
@@ -67,10 +67,10 @@
             <td>{{ item.nome }}</td>
             <td>{{ item.categoria }}</td>
             <td>{{ item.patrimonio }}</td>
-            <td :class="item.status === 'disponível' ? 'disponivel' : 'emprestado'">{{ item.status }}</td>
+            <td :class="item.status === 'Disponível' ? 'Disponivel' : 'Emprestado'">{{ item.status }}</td>
             <td>
-              <button @click="editarEquipamento(item)">Editar</button>
-              <button @click="removerEquipamento(item.id)">Remover</button>
+              <button @click="editarEquipamento(item)" class="btn-editar">Editar</button>
+              <button @click="removerEquipamento(item.id)" class="btn-remover">Remover</button>
             </td>
           </tr>
         </tbody>
